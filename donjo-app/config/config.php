@@ -578,8 +578,8 @@ $config['proxy_ips'] = '';
 | - Nama Lembaga
 |
 */
-$config['nama_aplikasi'] = 'OpenSID';
-$config['nama_lembaga']  = 'OpenDesa';
+$config['nama_aplikasi'] = 'SmartTakida';
+$config['nama_lembaga']  = 'SmartTakida';
 
 /*
 |--------------------------------------------------------------------------
@@ -590,8 +590,8 @@ $config['nama_lembaga']  = 'OpenDesa';
 | - Token Pantau (Default)
 |
 */
-$config['server_pantau'] = 'https://pantau.opensid.my.id';
-$config['token_pantau']  = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6bnVsbCwidGltZXN0YW1wIjoxNjAzNDY2MjM5fQ.HVCNnMLokF2tgHwjQhSIYo6-2GNXB4-Kf28FSIeXnZw';
+$config['server_pantau'] = '';
+$config['token_pantau']  = '';
 
 /*
 |--------------------------------------------------------------------------
@@ -601,7 +601,8 @@ $config['token_pantau']  = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6bnVsbCw
 | - Server layanan (Default)
 |
 */
-$config['server_layanan'] = 'https://layanan.opendesa.id';
+// $config['server_layanan'] = 'https://layanan.opendesa.id';
+$config['server_layanan'] = '';
 
 /*
 |--------------------------------------------------------------------------
