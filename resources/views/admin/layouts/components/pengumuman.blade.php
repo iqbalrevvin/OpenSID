@@ -55,7 +55,8 @@
 @push('scripts')
 <script>
   $('document').ready(function() {
-    $('#pengumuman').modal({backdrop: 'static', keyboard: false});
+    // $('#pengumuman').modal({backdrop: 'static', keyboard: false});
+    $('#pengumuman').hide();
     $('#indikator').hide();
   });
 

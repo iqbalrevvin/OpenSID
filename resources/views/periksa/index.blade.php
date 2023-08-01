@@ -28,7 +28,7 @@
             <nav class="navbar navbar-static-top">
                 <div class="container">
                     <div class="navbar-header">
-                        <a href="{{ route('/') }}" class="navbar-brand"><b>Open</b>SID</a>
+                        <a href="{{ route('/') }}" class="navbar-brand"><b>Smart</b>Takida</a>
                         <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
                             data-target="#navbar-collapse">
                             <i class="fa fa-bars"></i>
