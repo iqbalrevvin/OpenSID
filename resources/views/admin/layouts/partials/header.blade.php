@@ -1,7 +1,7 @@
 <header class="main-header">
   <a href="{{ route('/') }}" target="_blank" class="logo">
-    <span class="logo-mini"><b>TKD</b></span>
-    <span class="logo-lg"><b>SmartTakida</b></span>
+    <span class="logo-mini"><b>SMD</b></span>
+    <span class="logo-lg"><b>SimakDesa</b></span>
   </a>
 
   <nav class="navbar navbar-static-top">

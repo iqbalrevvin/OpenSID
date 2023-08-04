@@ -578,8 +578,8 @@ $config['proxy_ips'] = '';
 | - Nama Lembaga
 |
 */
-$config['nama_aplikasi'] = 'SmartTakida';
-$config['nama_lembaga']  = 'SmartTakida';
+$config['nama_aplikasi'] = 'SimakDesa';
+$config['nama_lembaga']  = 'SimakDesa';
 
 /*
 |--------------------------------------------------------------------------
