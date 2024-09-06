@@ -64,11 +64,12 @@
 									</tr>
 								</thead>
 								<tbody>
+									<?php if($main) : ?>
 									<?php foreach ($main as $indeks => $data): ?>
 										<tr>
 											<td class="nostretch"><?= $indeks + 1?></td>
 											<td class="nostretch">
-												<?php if ($this->CI->cek_hak_akses('u')): ?>
+												<?php if (can('u')): ?>
 													<a href="<?= site_url("{$this->controller}/form/{$p}/{$o}/{$data['id']}")?>" class="btn bg-orange btn-flat btn-sm"  title="Ubah Data"><i class="fa fa-edit"></i></a>
 												<?php endif; ?>
 												<?php if ($data['tanda_terima']): ?>
@@ -84,6 +85,7 @@
 											<td><?= $data['keterangan']?></td>
 										</tr>
 									<?php endforeach; ?>
+									<?php else: tidak_ada_data(8); endif; ?>
 								</tbody>
 							</table>
 						</div>

@@ -2,7 +2,7 @@
     <section class="content-header">
         <h1>Rincian Mutasi C-DESA</h1>
         <ol class="breadcrumb">
-            <li><a href="<?= site_url('hom_sid')?>"><i class="fa fa-home"></i> Home</a></li>
+            <li><a href="<?= site_url('beranda')?>"><i class="fa fa-home"></i> Beranda</a></li>
             <li><a href="<?= site_url('cdesa')?>"> Daftar C-DESA</a></li>
             <li><a href="<?= site_url('cdesa/rincian/' . $cdesa['id'])?>"> Rincian C-DESA</a></li>
             <li class="active">Mutasi C-Desa</li>
@@ -11,7 +11,7 @@
     <section class="content" id="maincontent">
         <div class="box box-info">
             <div class="box-header with-border">
-                <?php if ($this->CI->cek_hak_akses('u')): ?>
+                <?php if (can('u')): ?>
                     <a href="<?=site_url('cdesa/create_mutasi/' . $cdesa['id']) . '/' . $persil['id']?>" class="btn btn-social btn-flat btn-success btn-sm btn-sm visible-xs-block visible-sm-inline-block visible-md-inline-block visible-lg-inline-block"  title="Tambah Persil">
                         <i class="fa fa-plus"></i>Tambah Mutasi Persil
                     </a>
@@ -99,7 +99,7 @@
                                     <thead class="bg-gray disabled color-palette">
                                         <tr>
                                             <th class="padat">No</th>
-                                            <?php if ($this->CI->cek_hak_akses('u')): ?>
+                                            <?php if (can('u')): ?>
                                                 <th class="padat">Aksi</th>
                                             <?php endif; ?>
                                             <th>No. Bidang Mutasi</th>
@@ -112,15 +112,15 @@
                                     </thead>
                                     <tbody>
                                         <?php $nomer = $paging->offset; ?>
-                                        <?php foreach ($mutasi as $key => $item): $nomer++; ?>
+                                        <?php foreach ($mutasi as $item): $nomer++; ?>
                                             <tr>
                                                 <td class="text-center"><?= $nomer?></td>
-                                                <?php if ($this->CI->cek_hak_akses('u')): ?>
+                                                <?php if (can('u')): ?>
                                                     <td nowrap class="text-center">
                                                         <a href="<?= site_url("cdesa/create_mutasi/{$item['id_cdesa_masuk']}/{$item['id_persil']}/{$item['id']}")?>" class="btn bg-orange btn-flat btn-sm" title="Ubah"><i class="fa fa-edit"></i></a>
                                                         <a href="#" data-path="<?=  $item['path']?>" class="btn bg-olive btn-flat btn-sm area-map" title="Lihat Map" data-toggle="modal" data-target="#map-modal" ><i class="fa fa-map"></i></a>
                                                         <?php if ($item['jenis_mutasi'] != '9'): ?>
-                                                            <?php if ($this->CI->cek_hak_akses('h')): ?>
+                                                            <?php if (can('h')): ?>
                                                                 <a href="#" data-href="<?= site_url("cdesa/hapus_mutasi/{$cdesa['id']}/{$item['id']}")?>" class="btn bg-maroon btn-flat btn-sm"  title="Hapus" data-toggle="modal" data-target="#confirm-delete"><i class="fa fa-trash-o"></i></a>
                                                             <?php endif; ?>
                                                         <?php else: ?>
@@ -194,7 +194,6 @@
         </div>
     </div>
 </div>
-
 <script type="text/javascript">
     // deklarasi variable diluar fungsi agar terbaca di semua fungsi
     var peta_area;
@@ -206,16 +205,11 @@
         var zoom = 4;
     <?php endif; ?>
 
-    var options = {
-        maxZoom: <?= setting('max_zoom_peta') ?>,
-        minZoom: <?= setting('min_zoom_peta') ?>,
-    };
-
     $(document).ready(function() {
         $(document).on('shown.bs.modal','#map-modal', function(event) {
             if (L.DomUtil.get('map')._leaflet_id  == undefined) {
 
-                peta_area = L.map('map', options).setView(posisi, zoom);
+                peta_area = L.map('map', pengaturan_peta).setView(posisi, zoom);
 
                 //Menampilkan BaseLayers Peta
                 var baseLayers = getBaseLayers(peta_area, MAPBOX_KEY, JENIS_PETA);

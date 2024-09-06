@@ -2,7 +2,7 @@
 	<section class="content-header">
 		<h1>Daftar Mutasi Inventaris Tanah</h1>
 		<ol class="breadcrumb">
-			<li><a href="<?= site_url('hom_sid')?>"><i class="fa fa-home"></i> Home</a></li>
+			<li><a href="<?= site_url('beranda')?>"><i class="fa fa-home"></i> Beranda</a></li>
 			<li class="active">Daftar Mutasi Inventaris Tanah</li>
 		</ol>
 	</section>
@@ -43,10 +43,10 @@
 																		<a href="<?= site_url('inventaris_tanah/form_mutasi/' . $data->id); ?>" title="Mutasi Data" class="btn bg-olive btn-flat btn-sm"><i class="fa fa-external-link-square"></i></a>
 																	<?php endif; ?>
 																	<a href="<?= site_url('inventaris_tanah/view_mutasi/' . $data->id); ?>" title="Lihat Data" class="btn bg-info btn-flat btn-sm"><i class="fa fa-eye"></i></a>
-																	<?php if ($this->CI->cek_hak_akses('u')): ?>
+																	<?php if (can('u')): ?>
 																		<a href="<?= site_url('inventaris_tanah/edit_mutasi/' . $data->id); ?>" title="Edit Data"  class="btn bg-orange btn-flat btn-sm"><i class="fa fa-edit"></i></a>
 																	<?php endif; ?>
-																	<?php if ($this->CI->cek_hak_akses('h')): ?>
+																	<?php if (can('h')): ?>
 																		<a href="#" data-href="<?= site_url("api_inventaris_tanah/delete_mutasi/{$data->id}")?>" class="btn bg-maroon btn-flat btn-sm"  title="Hapus" data-toggle="modal" data-target="#confirm-delete"><i class="fa fa-trash-o"></i></a>
 																	<?php endif; ?>
 																</td>
@@ -92,7 +92,7 @@
 														<select name="penandatangan" id="penandatangan" class="form-control input-sm">
 															<?php foreach ($pamong as $data): ?>
 																<option value="<?= $data['pamong_id']?>" data-jabatan="<?= trim($data['jabatan'])?>"
-																	<?= (strpos(strtolower($data['jabatan']), 'Kepala Desa') !== false) ? 'selected' : '' ?>>
+																	<?= (stripos($data['jabatan'], 'Kepala Desa') !== false) ? 'selected' : '' ?>>
 																	<?= $data['pamong_nama']?>(<?= $data['jabatan']?>)
 																</option>
 															<?php endforeach; ?>
@@ -135,7 +135,7 @@
 														<select name="penandatangan_pdf" id="penandatangan_pdf" class="form-control input-sm">
 															<?php foreach ($pamong as $data): ?>
 																<option value="<?= $data['pamong_id']?>" data-jabatan="<?= trim($data['jabatan'])?>"
-																	<?= (strpos(strtolower($data['jabatan']), 'Kepala Desa') !== false) ? 'selected' : '' ?>>
+																	<?= (stripos($data['jabatan'], 'Kepala Desa') !== false) ? 'selected' : '' ?>>
 																	<?= $data['pamong_nama']?>(<?= $data['jabatan']?>)
 																</option>
 															<?php endforeach; ?>

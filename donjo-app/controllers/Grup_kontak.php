@@ -11,7 +11,7 @@
  * Aplikasi dan source code ini dirilis berdasarkan lisensi GPL V3
  *
  * Hak Cipta 2009 - 2015 Combine Resource Institution (http://lumbungkomunitas.net/)
- * Hak Cipta 2016 - 2023 Perkumpulan Desa Digital Terbuka (https://opendesa.id)
+ * Hak Cipta 2016 - 2024 Perkumpulan Desa Digital Terbuka (https://opendesa.id)
  *
  * Dengan ini diberikan izin, secara gratis, kepada siapa pun yang mendapatkan salinan
  * dari perangkat lunak ini dan file dokumentasi terkait ("Aplikasi Ini"), untuk diperlakukan
@@ -29,7 +29,7 @@
  * @package   OpenSID
  * @author    Tim Pengembang OpenDesa
  * @copyright Hak Cipta 2009 - 2015 Combine Resource Institution (http://lumbungkomunitas.net/)
- * @copyright Hak Cipta 2016 - 2023 Perkumpulan Desa Digital Terbuka (https://opendesa.id)
+ * @copyright Hak Cipta 2016 - 2024 Perkumpulan Desa Digital Terbuka (https://opendesa.id)
  * @license   http://www.gnu.org/licenses/gpl.html GPL V3
  * @link      https://github.com/OpenSID/OpenSID
  *
@@ -39,17 +39,19 @@ use App\Models\AnggotaGrup;
 use App\Models\DaftarKontak;
 use App\Models\GrupKontak;
 use App\Models\Penduduk;
+use Carbon\Carbon;
 
 defined('BASEPATH') || exit('No direct script access allowed');
 
 class Grup_kontak extends Admin_Controller
 {
+    public $modul_ini           = 'hubung-warga';
+    public $sub_modul_ini       = 'daftar-kontak';
+    public $kategori_pengaturan = 'hubung warga';
+
     public function __construct()
     {
         parent::__construct();
-        $this->modul_ini          = 'hubung-warga';
-        $this->sub_modul_ini      = 'daftar-kontak';
-        $this->header['kategori'] = 'hubung warga';
     }
 
     public function index()
@@ -67,20 +69,18 @@ class Grup_kontak extends Admin_Controller
                     }
                 })
                 ->addIndexColumn()
-                ->addColumn('aksi', static function ($row) {
+                ->addColumn('aksi', static function ($row): string {
                     $aksi = '';
 
                     if (can('u')) {
-                        $aksi .= '<a href="' . route('grup_kontak.form', $row->id_grup) . '" class="btn btn-warning btn-sm"  title="Ubah Data"><i class="fa fa-edit"></i></a> ';
+                        $aksi .= '<a href="' . ci_route('grup_kontak.form', $row->id_grup) . '" class="btn btn-warning btn-sm"  title="Ubah Data"><i class="fa fa-edit"></i></a> ';
                     }
 
                     if (can('h')) {
-                        $aksi .= '<a href="#" data-href="' . route('grup_kontak.delete', $row->id_grup) . '" class="btn bg-maroon btn-sm"  title="Hapus Data" data-toggle="modal" data-target="#confirm-delete"><i class="fa fa-trash"></i></a> ';
+                        $aksi .= '<a href="#" data-href="' . ci_route('grup_kontak.delete', $row->id_grup) . '" class="btn bg-maroon btn-sm"  title="Hapus Data" data-toggle="modal" data-target="#confirm-delete"><i class="fa fa-trash"></i></a> ';
                     }
 
-                    $aksi .= '<a href="' . route('grup_kontak.anggota', $row->id_grup) . '" class="btn bg-purple btn-sm"  title="Data Anggota"><i class="fa fa fa-list"></i></a> ';
-
-                    return $aksi;
+                    return $aksi . ('<a href="' . ci_route('grup_kontak.anggota', $row->id_grup) . '" class="btn bg-purple btn-sm"  title="Data Anggota"><i class="fa fa fa-list"></i></a> ');
                 })
                 ->rawColumns(['ceklist', 'aksi'])
                 ->make();
@@ -95,18 +95,18 @@ class Grup_kontak extends Admin_Controller
 
         if ($id) {
             $action     = 'Ubah';
-            $formAction = route('grup_kontak.update', $id);
+            $formAction = ci_route('grup_kontak.update', $id);
             $grupKontak = GrupKontak::findOrFail($id);
         } else {
             $action     = 'Tambah';
-            $formAction = route('grup_kontak.insert');
+            $formAction = ci_route('grup_kontak.insert');
             $grupKontak = null;
         }
 
-        return view('admin.grup_kontak.form', compact('action', 'formAction', 'grupKontak'));
+        return view('admin.grup_kontak.form', ['action' => $action, 'formAction' => $formAction, 'grupKontak' => $grupKontak]);
     }
 
-    public function insert()
+    public function insert(): void
     {
         $this->redirect_hak_akses('u');
 
@@ -116,7 +116,7 @@ class Grup_kontak extends Admin_Controller
         redirect_with('error', 'Gagal Tambah Data');
     }
 
-    public function update($id = null)
+    public function update($id = null): void
     {
         $this->redirect_hak_akses('u');
 
@@ -128,7 +128,7 @@ class Grup_kontak extends Admin_Controller
         redirect_with('error', 'Gagal Ubah Data');
     }
 
-    public function delete($id = null)
+    public function delete($id = null): void
     {
         $this->redirect_hak_akses('h');
 
@@ -152,7 +152,7 @@ class Grup_kontak extends Admin_Controller
     {
         $grupKontak = GrupKontak::findOrFail($id);
 
-        return view('admin.grup_kontak.anggota.index', compact('grupKontak'));
+        return view('admin.grup_kontak.anggota.index', ['grupKontak' => $grupKontak]);
     }
 
     public function anggotaDatatables($id_grup = null)
@@ -167,12 +167,10 @@ class Grup_kontak extends Admin_Controller
                 ->addIndexColumn()
                 ->addColumn('aksi', static function ($row) {
                     if (can('h')) {
-                        return '<a href="#" data-href="' . route('grup_kontak.anggotadelete', $row->id_grup_kontak) . '" class="btn bg-maroon btn-sm"  title="Hapus Data" data-toggle="modal" data-target="#confirm-delete"><i class="fa fa-trash"></i></a> ';
+                        return '<a href="#" data-href="' . ci_route('grup_kontak.anggotadelete', $row->id_grup_kontak) . '" class="btn bg-maroon btn-sm"  title="Hapus Data" data-toggle="modal" data-target="#confirm-delete"><i class="fa fa-trash"></i></a> ';
                     }
                 })
-                ->addColumn('kontak', static function ($row) {
-                    return (null === $row->id_kontak) ? '<span class="label label-success">Penduduk</span>' : '<span class="label label-info">Eksternal</span>';
-                })
+                ->addColumn('kontak', static fn ($row): string => (null === $row->id_kontak) ? '<span class="label label-success">Penduduk</span>' : '<span class="label label-info">Eksternal</span>')
                 ->rawColumns(['ceklist', 'aksi', 'kontak'])
                 ->make();
         }
@@ -185,17 +183,17 @@ class Grup_kontak extends Admin_Controller
         $this->redirect_hak_akses('u');
 
         $action     = 'Tambah';
-        $formAction = route('grup_kontak.anggotainsert');
+        $formAction = ci_route('grup_kontak.anggotainsert');
         $grupKontak = GrupKontak::find($id_grup) ?? show_404();
 
-        return view('admin.grup_kontak.anggota.form', compact('action', 'formAction', 'grupKontak'));
+        return view('admin.grup_kontak.anggota.form', ['action' => $action, 'formAction' => $formAction, 'grupKontak' => $grupKontak]);
     }
 
-    public function anggotaInsert()
+    public function anggotaInsert(): void
     {
         $this->redirect_hak_akses('u');
 
-        if (AnggotaGrup::create(static::anggotaValidate($this->request))) {
+        if (AnggotaGrup::insert(static::anggotaValidate($this->request))) {
             set_session('success', 'Berhasil Tambah Data');
         } else {
             set_session('error', 'Gagal Tambah Data');
@@ -204,7 +202,7 @@ class Grup_kontak extends Admin_Controller
         redirect("grup_kontak/anggota/{$this->request['id_grup']}");
     }
 
-    public function anggotaDelete($id = null)
+    public function anggotaDelete($id = null): void
     {
         $this->redirect_hak_akses('h');
 
@@ -223,18 +221,24 @@ class Grup_kontak extends Admin_Controller
         $penduduk = [];
         if ($request['id_penduduk']) {
             foreach ($request['id_penduduk'] as $key => $value) {
-                $penduduk[$key]['id_grup']     = bilangan($request['id_grup']);
+                $penduduk[$key]['config_id']   = identitas('id');
+                $penduduk[$key]['id_grup']     = (int) bilangan($request['id_grup']);
                 $penduduk[$key]['id_kontak']   = null;
-                $penduduk[$key]['id_penduduk'] = bilangan($value);
+                $penduduk[$key]['id_penduduk'] = (int) bilangan($value);
+                $penduduk[$key]['created_at']  = Carbon::now();
+                $penduduk[$key]['updated_at']  = Carbon::now();
             }
         }
 
         $kontak = [];
         if ($request['id_kontak']) {
             foreach ($request['id_kontak'] as $key => $value) {
-                $kontak[$key]['id_grup']     = bilangan($request['id_grup']);
-                $kontak[$key]['id_kontak']   = bilangan($value);
+                $kontak[$key]['config_id']   = identitas('id');
+                $kontak[$key]['id_grup']     = (int) bilangan($request['id_grup']);
+                $kontak[$key]['id_kontak']   = (int) bilangan($value);
                 $kontak[$key]['id_penduduk'] = null;
+                $kontak[$key]['created_at']  = Carbon::now();
+                $kontak[$key]['updated_at']  = Carbon::now();
             }
         }
 
@@ -250,11 +254,9 @@ class Grup_kontak extends Admin_Controller
 
             $datatables = Penduduk::select(['id', 'nama', 'telepon', 'email', 'telegram', 'hubung_warga'])
                 ->whereNotIn('id', $id_penduduk)
-                ->where(static function ($query) {
-                    return $query->whereNotNull('telepon')
-                        ->orWhereNotNull('email')
-                        ->orWhereNotNull('telegram');
-                })
+                ->where(static fn ($query) => $query->whereNotNull('telepon')
+                    ->orWhereNotNull('email')
+                    ->orWhereNotNull('telegram'))
                 ->status();
 
             return datatables($datatables)
@@ -278,11 +280,9 @@ class Grup_kontak extends Admin_Controller
                 ->whereNotNull('id_kontak')
                 ->pluck('id_kontak');
 
-            $datatables = DaftarKontak::where(static function ($query) {
-                return $query->whereNotNull('telepon')
-                    ->orWhereNotNull('email')
-                    ->orWhereNotNull('telegram');
-            })
+            $datatables = DaftarKontak::where(static fn ($query) => $query->whereNotNull('telepon')
+                ->orWhereNotNull('email')
+                ->orWhereNotNull('telegram'))
                 ->whereNotIn('id_kontak', $id_kontak);
 
             return datatables($datatables)

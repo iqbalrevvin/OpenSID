@@ -2,7 +2,7 @@
     <section class="content-header">
         <h1>Rincian C-DESA</h1>
         <ol class="breadcrumb">
-            <li><a href="<?= site_url('hom_sid')?>"><i class="fa fa-home"></i> Home</a></li>
+            <li><a href="<?= site_url('beranda')?>"><i class="fa fa-home"></i> Beranda</a></li>
             <li><a href="<?= site_url('cdesa')?>"> Daftar C-DESA</a></li>
             <li class="active">Rincian C-DESA</li>
         </ol>
@@ -10,7 +10,7 @@
     <section class="content" id="maincontent">
         <div class="box box-info">
             <div class="box-header with-border">
-                <?php if ($this->CI->cek_hak_akses('u')): ?>
+                <?php if (can('u')): ?>
                     <a href="<?=site_url('cdesa/create_mutasi/' . $cdesa['id'])?>" class="btn btn-social btn-flat btn-success btn-sm btn-sm visible-xs-block visible-sm-inline-block visible-md-inline-block visible-lg-inline-block"  title="Tambah Persil">
                     <i class="fa fa-plus"></i>Tambah Mutasi Persil
                 <?php endif; ?>
@@ -81,7 +81,7 @@
                                                 <td class="text-center padat"><?= ($key + 1); ?></td>
                                                 <td nowrap class="padat">
                                                     <a href='<?= site_url("cdesa/mutasi/{$cdesa['id']}/{$item['id']}")?>' class="btn bg-maroon btn-flat btn-sm"  title="Daftar Mutasi"><i class="fa fa-exchange"></i></a>
-                                                    <?php if ($this->CI->cek_hak_akses('u', 'data_persil')): ?>
+                                                    <?php if (can('u', 'data_persil')): ?>
                                                         <a href="<?= site_url("data_persil/form/{$item['id']}")?>" class="btn bg-orange btn-flat btn-sm" title="Ubah"><i class="fa fa-edit"></i></a>
                                                     <?php endif; ?>
                                                     <a href="#" data-path="<?=  $item['path']?>" class="btn bg-olive btn-flat btn-sm area-map" title="Lihat Map" data-toggle="modal" data-target="#map-modal" ><i class="fa fa-map"></i></a>
@@ -131,7 +131,6 @@
         </div>
     </div>
 </div>
-
 <script type="text/javascript">
     // deklarasi variable diluar fungsi agar terbaca di semua fungsi
     var peta_area;
@@ -143,15 +142,10 @@
         var zoom = 4;
     <?php endif; ?>
 
-    var options = {
-        maxZoom: <?= setting('max_zoom_peta') ?>,
-        minZoom: <?= setting('min_zoom_peta') ?>,
-    };
-
     $(document).ready(function() {
         $(document).on('shown.bs.modal','#map-modal', function(event) {
             if (L.DomUtil.get('map')._leaflet_id  == undefined) {
-                peta_area = L.map('map', options).setView(posisi, zoom);
+                peta_area = L.map('map', pengaturan_peta).setView(posisi, zoom);
 
                 //Menampilkan BaseLayers Peta
                 var baseLayers = getBaseLayers(peta_area, MAPBOX_KEY, JENIS_PETA);

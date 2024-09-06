@@ -58,6 +58,7 @@
     <link rel="stylesheet" href="<?= asset('css/leaflet.groupedlayercontrol.min.css') ?>">
     <link rel="stylesheet" href="<?= asset('css/peta.css') ?>">
     <link rel="stylesheet" href="<?= asset('css/toastr.min.css') ?>">
+    <link rel="stylesheet" href="<?= asset('css/leaflet.fullscreen.css') ?>" />
 
     <!-- Sweet Alert -->
     <link rel="stylesheet" href="<?= asset('js/sweetalert2/sweetalert2.min.css') ?>">
@@ -272,6 +273,7 @@
             </nav>
         </header>
 
+        <!-- <?= view('admin.layouts.partials.header') ?> -->
         <!-- Untuk menampilkan modal bootstrap umum -->
         <div class="modal fade" id="modalBox" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
             <div class="modal-dialog">
@@ -286,15 +288,15 @@
         </div>
 
         <!-- Untuk menampilkan pengaturan -->
-        <?php if ($this->header['kategori'] && $this->header['kategori'] !== 'pelanggan' && can('u', $this->controller)) : ?>
+        <?php if ($this->kategori_pengaturan && $this->kategori_pengaturan !== 'pelanggan' && can('u', $this->akses_modul ?? ($this->modul_ini ?? $this->sub_modul_ini))) : ?>
             <div class="modal fade" id="pengaturan" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
                 <div class="modal-dialog">
                     <div class="modal-content">
                         <div class="modal-header">
                             <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                            <h4 class="modal-title" id="myModalLabel"> Pengaturan <?= ucwords(str_replace('_', ' ', $this->header['kategori'])) ?></h4>
+                            <h4 class="modal-title" id="myModalLabel"> Pengaturan <?= ucwords(str_replace('_', ' ', $this->kategori_pengaturan)) ?></h4>
                         </div>
-                        <?php $this->load->view('global/modal_setting', ['kategori' => [$this->header['kategori']]]) ?>
+                        <?php $this->load->view('global/modal_setting', ['kategori_pengaturan' => [$this->kategori_pengaturan]]) ?>
                     </div>
                 </div>
             </div>

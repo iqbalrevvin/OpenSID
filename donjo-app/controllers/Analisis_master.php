@@ -11,7 +11,7 @@
  * Aplikasi dan source code ini dirilis berdasarkan lisensi GPL V3
  *
  * Hak Cipta 2009 - 2015 Combine Resource Institution (http://lumbungkomunitas.net/)
- * Hak Cipta 2016 - 2023 Perkumpulan Desa Digital Terbuka (https://opendesa.id)
+ * Hak Cipta 2016 - 2024 Perkumpulan Desa Digital Terbuka (https://opendesa.id)
  *
  * Dengan ini diberikan izin, secara gratis, kepada siapa pun yang mendapatkan salinan
  * dari perangkat lunak ini dan file dokumentasi terkait ("Aplikasi Ini"), untuk diperlakukan
@@ -29,21 +29,25 @@
  * @package   OpenSID
  * @author    Tim Pengembang OpenDesa
  * @copyright Hak Cipta 2009 - 2015 Combine Resource Institution (http://lumbungkomunitas.net/)
- * @copyright Hak Cipta 2016 - 2023 Perkumpulan Desa Digital Terbuka (https://opendesa.id)
+ * @copyright Hak Cipta 2016 - 2024 Perkumpulan Desa Digital Terbuka (https://opendesa.id)
  * @license   http://www.gnu.org/licenses/gpl.html GPL V3
  * @link      https://github.com/OpenSID/OpenSID
  *
  */
 
-defined('BASEPATH') || exit('No direct script access allowed');
-
+use App\Enums\AnalisisRefSubjekEnum;
 use OpenSpout\Common\Entity\Style\Border;
 use OpenSpout\Writer\Common\Creator\Style\BorderBuilder;
 use OpenSpout\Writer\Common\Creator\Style\StyleBuilder;
 use OpenSpout\Writer\Common\Creator\WriterEntityFactory;
 
+defined('BASEPATH') || exit('No direct script access allowed');
+
 class Analisis_master extends Admin_Controller
 {
+    public $modul_ini     = 'analisis';
+    public $sub_modul_ini = 'master-analisis';
+
     public function __construct()
     {
         parent::__construct();
@@ -53,13 +57,11 @@ class Analisis_master extends Admin_Controller
         $this->load->model('analisis_parameter_model');
         $this->load->model('analisis_klasifikasi_model');
         $this->session->unset_userdata(['submenu', 'asubmenu']);
-        $this->modul_ini     = 'analisis';
-        $this->sub_modul_ini = 'master-analisis';
-        $this->set_page      = ['20', '50', '100'];
-        $this->list_session  = ['cari', 'filter', 'state'];
+        $this->set_page     = ['20', '50', '100'];
+        $this->list_session = ['cari', 'filter', 'state'];
     }
 
-    public function clear()
+    public function clear(): void
     {
         $this->session->unset_userdata($this->list_session);
         $this->session->per_page = $this->set_page[0];
@@ -67,7 +69,7 @@ class Analisis_master extends Admin_Controller
         redirect($this->controller);
     }
 
-    public function leave()
+    public function leave(): void
     {
         $id = $this->session->analisis_master;
         $this->session->unset_userdata(['analisis_master']);
@@ -75,7 +77,7 @@ class Analisis_master extends Admin_Controller
         redirect("{$this->controller}/menu/{$id}");
     }
 
-    public function index($p = 1, $o = 0)
+    public function index($p = 1, $o = 0): void
     {
         $this->session->unset_userdata(['analisis_master', 'analisis_nama']);
 
@@ -105,14 +107,14 @@ class Analisis_master extends Admin_Controller
         $this->render('analisis_master/table', $data);
     }
 
-    public function form($p = 1, $o = 0, $id = 0)
+    public function form($p = 1, $o = 0, $id = 0): void
     {
         $this->redirect_hak_akses('u');
         $data['p'] = $p;
         $data['o'] = $o;
 
         if ($id) {
-            $data['analisis_master'] = $this->analisis_master_model->get_analisis_master($id);
+            $data['analisis_master'] = $this->analisis_master_model->get_analisis_master($id) ?? show_404();
             $data['form_action']     = site_url("{$this->controller}/update/{$p}/{$o}/{$id}");
         } else {
             $data['analisis_master'] = null;
@@ -127,12 +129,12 @@ class Analisis_master extends Admin_Controller
         $this->render('analisis_master/form', $data);
     }
 
-    public function panduan()
+    public function panduan(): void
     {
         $this->render('analisis_master/panduan');
     }
 
-    public function import_analisis()
+    public function import_analisis(): void
     {
         $this->redirect_hak_akses('u');
         $data['form_action'] = site_url("{$this->controller}/import");
@@ -140,7 +142,7 @@ class Analisis_master extends Admin_Controller
         $this->load->view('analisis_master/import', $data);
     }
 
-    public function import()
+    public function import(): void
     {
         $this->redirect_hak_akses('u');
         $this->analisis_import_model->impor_analisis();
@@ -148,10 +150,10 @@ class Analisis_master extends Admin_Controller
         redirect($this->controller);
     }
 
-    public function ekspor($id)
+    public function ekspor($id): void
     {
         $writer = WriterEntityFactory::createXLSXWriter();
-        $master = $this->analisis_master_model->get_analisis_master($id);
+        $master = $this->analisis_master_model->get_analisis_master($id) ?? show_404();
         //Nama File
         $tgl      = date('Y_m_d');
         $fileName = 'analisis_' . urlencode($master['nama']) . '_' . $tgl . '.xlsx';
@@ -196,7 +198,7 @@ class Analisis_master extends Admin_Controller
             ->build();
     }
 
-    private function ekspor_master($writer, $master)
+    private function ekspor_master($writer, array $master): void
     {
         $sheet = $writer->getCurrentSheet();
         $sheet->setName('master');
@@ -222,7 +224,7 @@ class Analisis_master extends Admin_Controller
         }
     }
 
-    private function ekspor_pertanyaan($writer, $master)
+    private function ekspor_pertanyaan($writer, array $master): void
     {
         $sheet = $writer->addNewSheetAndMakeItCurrent();
         $sheet->setName('pertanyaan');
@@ -248,7 +250,7 @@ class Analisis_master extends Admin_Controller
         }
     }
 
-    private function ekspor_jawaban($writer, $master)
+    private function ekspor_jawaban($writer, array $master): void
     {
         $jawaban = $writer->addNewSheetAndMakeItCurrent();
         $jawaban->setName('jawaban');
@@ -272,7 +274,7 @@ class Analisis_master extends Admin_Controller
         }
     }
 
-    private function ekspor_klasifikasi($writer, $master)
+    private function ekspor_klasifikasi($writer, array $master): void
     {
         $klasifikasi = $writer->addNewSheetAndMakeItCurrent();
         $klasifikasi->setName('klasifikasi');
@@ -295,7 +297,7 @@ class Analisis_master extends Admin_Controller
         }
     }
 
-    public function import_gform()
+    public function import_gform(): void
     {
         $this->redirect_hak_akses('u');
         $data['form_action'] = site_url("{$this->controller}/exec_import_gform");
@@ -303,10 +305,10 @@ class Analisis_master extends Admin_Controller
         $this->load->view('analisis_master/import_gform', $data);
     }
 
-    public function menu($id = 0)
+    public function menu($id = 0): void
     {
         $this->session->analisis_master = $id;
-        $data['analisis_master']        = $this->analisis_master_model->get_analisis_master($id);
+        $data['analisis_master']        = $this->analisis_master_model->get_analisis_master($id) ?? show_404();
         $master                         = $data['analisis_master'];
         $this->session->analisis_nama   = $master['nama'];
         $this->session->subjek_tipe     = $master['subjek_tipe'];
@@ -319,7 +321,7 @@ class Analisis_master extends Admin_Controller
         } elseif ($master['subjek_tipe'] == 6) {
             $data['subjek'] = ucwords($this->setting->sebutan_dusun);
         } else {
-            $data['subjek'] = $this->referensi_model->list_by_id('analisis_ref_subjek')[$master['subjek_tipe']]['subjek'];
+            $data['subjek'] = AnalisisRefSubjekEnum::all()[$master['subjek_tipe']];
         }
 
         // TODO: Periksa apakah perlu lakukan pre_update
@@ -329,7 +331,7 @@ class Analisis_master extends Admin_Controller
         $this->render('analisis_master/menu', $data);
     }
 
-    public function search()
+    public function search(): void
     {
         $cari = $this->input->post('cari');
         if ($cari != '') {
@@ -341,7 +343,7 @@ class Analisis_master extends Admin_Controller
         redirect($this->controller);
     }
 
-    public function filter()
+    public function filter(): void
     {
         $filter = $this->input->post('filter');
         if ($filter != 0) {
@@ -353,7 +355,7 @@ class Analisis_master extends Admin_Controller
         redirect($this->controller);
     }
 
-    public function state()
+    public function state(): void
     {
         $filter = $this->input->post('state');
         if ($filter != 0) {
@@ -365,7 +367,7 @@ class Analisis_master extends Admin_Controller
         redirect($this->controller);
     }
 
-    public function insert()
+    public function insert(): void
     {
         $this->redirect_hak_akses('u');
         $this->analisis_master_model->insert();
@@ -394,13 +396,13 @@ class Analisis_master extends Admin_Controller
             $redirect_uri    = $credential_data['web']['redirect_uris'][0];
         }
         if (empty($redirect_uri)) {
-            $redirect_uri = $this->setting->api_gform_redirect_uri;
+            return $this->setting->api_gform_redirect_uri;
         }
 
         return $redirect_uri;
     }
 
-    public function exec_import_gform()
+    public function exec_import_gform(): void
     {
         $this->redirect_hak_akses('u');
         $this->session->google_form_id = $this->input->post('input-form-id');
@@ -428,7 +430,7 @@ class Analisis_master extends Admin_Controller
         }
     }
 
-    public function update($p = 1, $o = 0, $id = 0)
+    public function update($p = 1, $o = 0, $id = 0): void
     {
         $this->redirect_hak_akses('u');
         $this->analisis_master_model->update($id);
@@ -436,7 +438,7 @@ class Analisis_master extends Admin_Controller
         redirect("{$this->controller}/index/{$p}/{$o}");
     }
 
-    public function delete($p = 1, $o = 0, $id = 0)
+    public function delete($p = 1, $o = 0, $id = 0): void
     {
         $this->redirect_hak_akses('h');
         $this->analisis_master_model->delete($id);
@@ -444,7 +446,7 @@ class Analisis_master extends Admin_Controller
         redirect("{$this->controller}/index/{$p}/{$o}");
     }
 
-    public function delete_all($p = 1, $o = 0)
+    public function delete_all($p = 1, $o = 0): void
     {
         $this->redirect_hak_akses('h');
         $this->analisis_master_model->delete_all();
@@ -452,7 +454,7 @@ class Analisis_master extends Admin_Controller
         redirect("{$this->controller}/index/{$p}/{$o}");
     }
 
-    public function save_import_gform()
+    public function save_import_gform(): void
     {
         $this->redirect_hak_akses('u');
         $this->analisis_import_model->save_import_gform();
@@ -461,7 +463,7 @@ class Analisis_master extends Admin_Controller
         redirect($this->controller);
     }
 
-    public function update_gform($id = 0)
+    public function update_gform($id = 0): void
     {
         $this->redirect_hak_akses('u');
         $this->session->google_form_id = $this->analisis_master_model->get_analisis_master($id)['gform_id'];

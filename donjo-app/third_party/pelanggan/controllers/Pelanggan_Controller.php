@@ -11,7 +11,7 @@
  * Aplikasi dan source code ini dirilis berdasarkan lisensi GPL V3
  *
  * Hak Cipta 2009 - 2015 Combine Resource Institution (http://lumbungkomunitas.net/)
- * Hak Cipta 2016 - 2023 Perkumpulan Desa Digital Terbuka (https://opendesa.id)
+ * Hak Cipta 2016 - 2024 Perkumpulan Desa Digital Terbuka (https://opendesa.id)
  *
  * Dengan ini diberikan izin, secara gratis, kepada siapa pun yang mendapatkan salinan
  * dari perangkat lunak ini dan file dokumentasi terkait ("Aplikasi Ini"), untuk diperlakukan
@@ -29,7 +29,7 @@
  * @package   OpenSID
  * @author    Tim Pengembang OpenDesa
  * @copyright Hak Cipta 2009 - 2015 Combine Resource Institution (http://lumbungkomunitas.net/)
- * @copyright Hak Cipta 2016 - 2023 Perkumpulan Desa Digital Terbuka (https://opendesa.id)
+ * @copyright Hak Cipta 2016 - 2024 Perkumpulan Desa Digital Terbuka (https://opendesa.id)
  * @license   http://www.gnu.org/licenses/gpl.html GPL V3
  * @link      https://github.com/OpenSID/OpenSID
  *
@@ -43,10 +43,14 @@ use GuzzleHttp\Psr7;
 
 class Pelanggan_Controller extends Admin_Controller
 {
+    public $modul_ini           = 'info-desa';
+    public $sub_modul_ini       = 'layanan-pelanggan';
+    public $kategori_pengaturan = 'pelanggan';
+
     /**
      * @var Client HTTP Client
      */
-    protected $client;
+    protected Client $client;
 
     protected $server;
 
@@ -59,16 +63,15 @@ class Pelanggan_Controller extends Admin_Controller
             show_404();
         }
 
-        $this->modul_ini          = 'info-desa';
-        $this->sub_modul_ini      = 'layanan-pelanggan';
-        $this->header['kategori'] = 'pelanggan';
-        $this->client             = new Client();
+        $this->client = new Client();
     }
 
-    public function index()
+    public function index(): void
     {
         unset($this->header['perbaharui_langganan']);
-        $response = $this->pelanggan_model->api_pelanggan_pemesanan();
+
+        $response        = $this->pelanggan_model->api_pelanggan_pemesanan();
+        $notif_langganan = $this->pelanggan_model->status_langganan();
 
         kirim_versi_opensid();
         // Ubah layanan_opendesa_token terbaru, jangan perbaharui jika token tersimpan di config (untuk developmen)
@@ -79,30 +82,42 @@ class Pelanggan_Controller extends Admin_Controller
             redirect($this->controller);
         }
 
-        $this->render('pelanggan/index', ['response' => $response]);
+        $this->render('pelanggan/index', [
+            'title'           => 'Info Layanan Pelanggan',
+            'response'        => $response,
+            'notif_langganan' => $notif_langganan,
+        ]);
     }
 
-    public function peringatan()
+    public function peringatan(): void
     {
         // hapus auto perbarui
         unset($this->header['perbaharui_langganan']);
+
+        $response        = $this->pelanggan_model->api_pelanggan_pemesanan();
+        $notif_langganan = $this->pelanggan_model->status_langganan();
+
         if (empty($this->session->error_premium)) {
-            redirect('hom_sid');
+            redirect('beranda');
         }
 
-        $this->render('pelanggan/peringatan');
+        $this->render('pelanggan/index', [
+            'title'           => 'Info Peringatan',
+            'response'        => $response,
+            'notif_langganan' => $notif_langganan,
+        ]);
     }
 
-    public function perbarui()
+    public function perbarui(): void
     {
         kirim_versi_opensid();
-        $this->cache->hapus_cache_untuk_semua('status_langganan');
+        hapus_cache('status_langganan');
         session_success();
         sleep(3);
         redirect($this->controller);
     }
 
-    public function perpanjang_layanan()
+    public function perpanjang_layanan(): void
     {
         $this->render('pelanggan/perpanjang_layanan', ['pemesanan_id' => $_GET['pemesanan_id'], 'server' => $_GET['server'], 'invoice' => $_GET['invoice'], 'token' => $_GET['token']]);
     }
@@ -129,7 +144,7 @@ class Pelanggan_Controller extends Admin_Controller
                 ->getBody();
         } catch (ClientException $cx) {
             log_message('error', $cx);
-            $this->session->set_flashdata(['errors' => json_decode($cx->getResponse()->getBody())]);
+            $this->session->set_flashdata(['errors' => json_decode($cx->getResponse()->getBody(), null)]);
             session_error();
 
             return redirect('pelanggan');
@@ -140,7 +155,7 @@ class Pelanggan_Controller extends Admin_Controller
             return redirect('pelanggan');
         }
 
-        $this->cache->hapus_cache_untuk_semua('status_langganan');
+        hapus_cache('status_langganan');
         session_success();
         sleep(3);
         redirect($this->controller);
@@ -151,11 +166,10 @@ class Pelanggan_Controller extends Admin_Controller
         $this->load->helper('file');
         if ($this->input->is_ajax_request()) {
             if (config_item('demo_mode')) {
-                $this->cache->hapus_cache_untuk_semua('status_langganan');
-                $this->cache->pakai_cache(function () {
-                    // request ke api layanan.opendesa.id
-                    return json_decode(json_encode($this->request), false);
-                }, 'status_langganan', 24 * 60 * 60);
+                cache()->forget('identitas_desa');
+                hapus_cache('status_langganan');
+                $this->cache->pakai_cache(fn () => // request ke api layanan.opendesa.id
+                    json_decode(json_encode($this->request, JSON_THROW_ON_ERROR), false), 'status_langganan', 24 * 60 * 60);
 
                 return json([
                     'status'  => false,
@@ -164,9 +178,10 @@ class Pelanggan_Controller extends Admin_Controller
             }
 
             if (isset($this->request['body']['token'])) {
-                $this->cache->hapus_cache_untuk_semua('status_langganan');
+                hapus_cache('status_langganan');
+                cache()->forget('identitas_desa');
                 if ($this->request['body']['desa_id'] != kode_wilayah($this->header['desa']['kode_desa'])) {
-                    $this->setting_model->update_setting(['layanan_opendesa_token' => null]);
+                    // $this->setting_model->update_setting(['layanan_opendesa_token' => null]);
 
                     return json([
                         'status'  => false,
@@ -178,30 +193,24 @@ class Pelanggan_Controller extends Admin_Controller
                 if (config_item('token_layanan') != null) {
                     file_put_contents(LOKASI_CONFIG_DESA . '/config.php', implode(
                         '',
-                        array_map(function ($data) {
-                            return stristr($data, 'token_layanan') ? "\$config['token_layanan']  = '" . $this->request['body']['token'] . "';\n" : $data;
-                        }, file(LOKASI_CONFIG_DESA . '/config.php'))
+                        array_map(fn ($data): string => stristr($data, 'token_layanan') ? "\$config['token_layanan']  = '" . $this->request['body']['token'] . "';\n" : $data, file(LOKASI_CONFIG_DESA . '/config.php'))
                     ));
                 }
 
                 $post['layanan_opendesa_token'] = $this->request['body']['token'];
                 $this->setting_model->update_setting($post);
 
-                $this->cache->pakai_cache(function () {
-                    // request ke api layanan.opendesa.id
-                    return json_decode(json_encode($this->request), false);
-                }, 'status_langganan', 24 * 60 * 60);
+                $this->cache->pakai_cache(fn () => // request ke api layanan.opendesa.id
+                    json_decode(json_encode($this->request, JSON_THROW_ON_ERROR), false), 'status_langganan', 24 * 60 * 60);
 
                 // TODO: Sederhanakan query ini, pindahkan ke model
-                if (cek_anjungan()) {
-                    $this->db
-                        ->set(['status' => '1'])
-                        ->where('config_id', identitas('id'))
-                        ->where('tipe', '1')
-                        ->where('status', '0')
-                        ->where('status_alasan', 'tidak berlangganan anjungan')
-                        ->update('anjungan');
-                }
+                $this->db
+                    ->set(['status' => '1'])
+                    ->where('config_id', identitas('id'))
+                    ->where('tipe', '1')
+                    ->where('status', '0')
+                    ->where('status_alasan', 'tidak berlangganan anjungan')
+                    ->update('anjungan');
 
                 return json([
                     'status'  => true,

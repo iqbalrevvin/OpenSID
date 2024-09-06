@@ -11,7 +11,7 @@
  * Aplikasi dan source code ini dirilis berdasarkan lisensi GPL V3
  *
  * Hak Cipta 2009 - 2015 Combine Resource Institution (http://lumbungkomunitas.net/)
- * Hak Cipta 2016 - 2023 Perkumpulan Desa Digital Terbuka (https://opendesa.id)
+ * Hak Cipta 2016 - 2024 Perkumpulan Desa Digital Terbuka (https://opendesa.id)
  *
  * Dengan ini diberikan izin, secara gratis, kepada siapa pun yang mendapatkan salinan
  * dari perangkat lunak ini dan file dokumentasi terkait ("Aplikasi Ini"), untuk diperlakukan
@@ -29,7 +29,7 @@
  * @package   OpenSID
  * @author    Tim Pengembang OpenDesa
  * @copyright Hak Cipta 2009 - 2015 Combine Resource Institution (http://lumbungkomunitas.net/)
- * @copyright Hak Cipta 2016 - 2023 Perkumpulan Desa Digital Terbuka (https://opendesa.id)
+ * @copyright Hak Cipta 2016 - 2024 Perkumpulan Desa Digital Terbuka (https://opendesa.id)
  * @license   http://www.gnu.org/licenses/gpl.html GPL V3
  * @link      https://github.com/OpenSID/OpenSID
  *
@@ -41,13 +41,13 @@ defined('BASEPATH') || exit('No direct script access allowed');
 
 class Status_desa extends Admin_Controller
 {
+    public $modul_ini           = 'info-desa';
+    public $sub_modul_ini       = 'status-desa';
+    public $kategori_pengaturan = 'status sdgs';
+
     public function __construct()
     {
         parent::__construct();
-        $this->load->library('data_publik');
-        $this->modul_ini          = 'info-desa';
-        $this->sub_modul_ini      = 'status-desa';
-        $this->header['kategori'] = 'status sdgs';
     }
 
     public function index()
@@ -61,25 +61,25 @@ class Status_desa extends Admin_Controller
 
     private function idm()
     {
-        $tahun = session('tahun') ?? ($this->input->post('tahun') ?? ($this->setting->tahun_idm) ?? date('Y'));
+        $tahun = session('tahun') ?? ($this->input->post('tahun') ?? (setting('tahun_idm')) ?? date('Y'));
 
         $data = [
             'tahun' => (int) $tahun,
-            'idm'   => idm($this->header['desa']['kode_desa'], $tahun),
+            'idm'   => idm(identitas('kode_desa'), $tahun),
         ];
 
         return view('admin.status_desa.idm', $data);
     }
 
-    public function perbarui_idm(int $tahun)
+    public function perbarui_idm(int $tahun): void
     {
         if (cek_koneksi_internet() && $tahun) {
-            $kode_desa = $this->header['desa']['kode_desa'];
+            $kode_desa = identitas('kode_desa');
             $cache     = 'idm_' . $tahun . '_' . $kode_desa . '.json';
 
             // Cek server Kemendes sebelum hapus cache
             try {
-                $client = new \GuzzleHttp\Client();
+                $client = new GuzzleHttp\Client();
                 $client->get(config_item('api_idm') . "/{$kode_desa}/{$tahun}", [
                     'headers' => [
                         'X-Requested-With' => 'XMLHttpRequest',
@@ -99,7 +99,7 @@ class Status_desa extends Admin_Controller
         redirect_with('error', 'Tidak dapat mengambil data IDM.');
     }
 
-    public function simpan(int $tahun)
+    public function simpan(int $tahun): void
     {
         SettingAplikasi::where('key', 'tahun_idm')->update(['value' => $tahun]);
         set_session('tahun', $tahun);
@@ -111,10 +111,12 @@ class Status_desa extends Admin_Controller
     {
         set_session('navigasi', 'sdgs');
 
-        $sdgs      = sdgs();
-        $kode_desa = $this->header['desa']['kode_desa'];
+        $data = [
+            'sdgs'      => sdgs(),
+            'kode_desa' => identitas('kode_desa'),
+        ];
 
-        return view('admin.status_desa.sdgs', compact('sdgs', 'kode_desa'));
+        return view('admin.status_desa.sdgs', $data);
     }
 
     public function perbarui_bps()
@@ -134,7 +136,7 @@ class Status_desa extends Admin_Controller
         ]);
     }
 
-    public function perbarui_sdgs()
+    public function perbarui_sdgs(): void
     {
         set_session('navigasi', 'sdgs');
 
@@ -144,7 +146,7 @@ class Status_desa extends Admin_Controller
 
             // Cek server Kemendes sebelum hapus cache
             try {
-                $client = new \GuzzleHttp\Client();
+                $client = new GuzzleHttp\Client();
                 $client->get(config_item('api_sdgs') . $kode_desa, [
                     'headers' => [
                         'X-Requested-With' => 'XMLHttpRequest',
@@ -163,7 +165,7 @@ class Status_desa extends Admin_Controller
         redirect_with('error', 'Tidak dapat mengambil data SDGS.');
     }
 
-    public function navigasi($navigasi = 'idm')
+    public function navigasi($navigasi = 'idm'): void
     {
         redirect_with('navigasi', $navigasi);
     }

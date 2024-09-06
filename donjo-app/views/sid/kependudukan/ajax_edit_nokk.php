@@ -1,4 +1,4 @@
-<?php if ($this->CI->cek_hak_akses('u')): ?>
+<?php if (can('u')): ?>
 <?php $this->load->view('global/validasi_form'); ?>
 	<form action="<?= $form_action?>" method="post" id="validasi">
 		<div class="modal-body">
@@ -129,6 +129,25 @@
 
 			$('#nokk_sementara').change();
 
+		});
+		$('#validasi').on('reset', function(e) {
+			var dusun = '<?=$kk['dusun']?>';
+			var rw = '<?=$kk['rw']?>';
+			var rt = '<?=$kk['id_cluster']?>';
+
+			if (dusun) {
+				$('#isi_rw').show();
+				$("#rw option[value='"+rw+"']").attr('selected', 'selected');
+			} else {
+				$('#isi_rw').hide();
+			}
+
+			if (dusun && rw) {
+				$('#isi_rt').show();
+				$("#id_cluster option[value='"+rt+"']").attr('selected', 'selected');
+			} else {
+				$('#isi_rt').hide();
+			}
 		});
 	</script>
 <?php endif; ?>

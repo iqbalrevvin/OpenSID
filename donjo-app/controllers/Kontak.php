@@ -11,7 +11,7 @@
  * Aplikasi dan source code ini dirilis berdasarkan lisensi GPL V3
  *
  * Hak Cipta 2009 - 2015 Combine Resource Institution (http://lumbungkomunitas.net/)
- * Hak Cipta 2016 - 2023 Perkumpulan Desa Digital Terbuka (https://opendesa.id)
+ * Hak Cipta 2016 - 2024 Perkumpulan Desa Digital Terbuka (https://opendesa.id)
  *
  * Dengan ini diberikan izin, secara gratis, kepada siapa pun yang mendapatkan salinan
  * dari perangkat lunak ini dan file dokumentasi terkait ("Aplikasi Ini"), untuk diperlakukan
@@ -29,7 +29,7 @@
  * @package   OpenSID
  * @author    Tim Pengembang OpenDesa
  * @copyright Hak Cipta 2009 - 2015 Combine Resource Institution (http://lumbungkomunitas.net/)
- * @copyright Hak Cipta 2016 - 2023 Perkumpulan Desa Digital Terbuka (https://opendesa.id)
+ * @copyright Hak Cipta 2016 - 2024 Perkumpulan Desa Digital Terbuka (https://opendesa.id)
  * @license   http://www.gnu.org/licenses/gpl.html GPL V3
  * @link      https://github.com/OpenSID/OpenSID
  *
@@ -41,12 +41,13 @@ use App\Models\DaftarKontak;
 
 class Kontak extends Admin_Controller
 {
+    public $modul_ini           = 'hubung-warga';
+    public $sub_modul_ini       = 40;
+    public $kategori_pengaturan = 'hubung warga';
+
     public function __construct()
     {
         parent::__construct();
-        $this->modul_ini          = 'hubung-warga';
-        $this->sub_modul_ini      = 40;
-        $this->header['kategori'] = 'hubung warga';
     }
 
     public function index()
@@ -64,15 +65,15 @@ class Kontak extends Admin_Controller
                     }
                 })
                 ->addIndexColumn()
-                ->addColumn('aksi', static function ($row) {
+                ->addColumn('aksi', static function ($row): string {
                     $aksi = '';
 
                     if (can('u')) {
-                        $aksi .= '<a href="' . route('kontak.form', $row->id_kontak) . '" class="btn btn-warning btn-sm"  title="Ubah Data"><i class="fa fa-edit"></i></a> ';
+                        $aksi .= '<a href="' . ci_route('kontak.form', $row->id_kontak) . '" class="btn btn-warning btn-sm"  title="Ubah Data"><i class="fa fa-edit"></i></a> ';
                     }
 
                     if (can('h')) {
-                        $aksi .= '<a href="#" data-href="' . route('kontak.delete', $row->id_kontak) . '" class="btn bg-maroon btn-sm"  title="Hapus Data" data-toggle="modal" data-target="#confirm-delete"><i class="fa fa-trash"></i></a> ';
+                        $aksi .= '<a href="#" data-href="' . ci_route('kontak.delete', $row->id_kontak) . '" class="btn bg-maroon btn-sm"  title="Hapus Data" data-toggle="modal" data-target="#confirm-delete"><i class="fa fa-trash"></i></a> ';
                     }
 
                     return $aksi;
@@ -90,18 +91,18 @@ class Kontak extends Admin_Controller
 
         if ($id) {
             $action      = 'Ubah';
-            $form_action = route('kontak.update', $id);
+            $form_action = ci_route('kontak.update', $id);
             $kontak      = DaftarKontak::findOrFail($id);
         } else {
             $action      = 'Tambah';
-            $form_action = route('kontak.insert');
+            $form_action = ci_route('kontak.insert');
             $kontak      = null;
         }
 
-        return view('admin.kontak.form', compact('action', 'form_action', 'kontak'));
+        return view('admin.kontak.form', ['action' => $action, 'form_action' => $form_action, 'kontak' => $kontak]);
     }
 
-    public function insert()
+    public function insert(): void
     {
         $this->redirect_hak_akses('u');
 
@@ -111,7 +112,7 @@ class Kontak extends Admin_Controller
         redirect_with('error', 'Gagal Tambah Data');
     }
 
-    public function update($id = '')
+    public function update($id = ''): void
     {
         $this->redirect_hak_akses('u');
 
@@ -123,7 +124,7 @@ class Kontak extends Admin_Controller
         redirect_with('error', 'Gagal Ubah Data');
     }
 
-    public function delete($id = '')
+    public function delete($id = ''): void
     {
         $this->redirect_hak_akses('h');
 
@@ -133,7 +134,7 @@ class Kontak extends Admin_Controller
         redirect_with('error', 'Gagal Hapus Data');
     }
 
-    public function deleteAll()
+    public function deleteAll(): void
     {
         $this->redirect_hak_akses('h');
 
@@ -144,7 +145,7 @@ class Kontak extends Admin_Controller
     }
 
     // Hanya filter inputan
-    protected static function validate($request = [])
+    protected static function validate($request = []): array
     {
         return [
             'nama'         => nama_terbatas($request['nama']),

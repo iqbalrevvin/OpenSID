@@ -11,7 +11,7 @@
  * Aplikasi dan source code ini dirilis berdasarkan lisensi GPL V3
  *
  * Hak Cipta 2009 - 2015 Combine Resource Institution (http://lumbungkomunitas.net/)
- * Hak Cipta 2016 - 2023 Perkumpulan Desa Digital Terbuka (https://opendesa.id)
+ * Hak Cipta 2016 - 2024 Perkumpulan Desa Digital Terbuka (https://opendesa.id)
  *
  * Dengan ini diberikan izin, secara gratis, kepada siapa pun yang mendapatkan salinan
  * dari perangkat lunak ini dan file dokumentasi terkait ("Aplikasi Ini"), untuk diperlakukan
@@ -29,7 +29,7 @@
  * @package   OpenSID
  * @author    Tim Pengembang OpenDesa
  * @copyright Hak Cipta 2009 - 2015 Combine Resource Institution (http://lumbungkomunitas.net/)
- * @copyright Hak Cipta 2016 - 2023 Perkumpulan Desa Digital Terbuka (https://opendesa.id)
+ * @copyright Hak Cipta 2016 - 2024 Perkumpulan Desa Digital Terbuka (https://opendesa.id)
  * @license   http://www.gnu.org/licenses/gpl.html GPL V3
  * @link      https://github.com/OpenSID/OpenSID
  *
@@ -39,18 +39,19 @@ defined('BASEPATH') || exit('No direct script access allowed');
 
 class Surat_keluar extends Admin_Controller
 {
+    public $modul_ini     = 'buku-administrasi-desa';
+    public $sub_modul_ini = 'administrasi-umum';
+
     public function __construct()
     {
         parent::__construct();
         // Untuk bisa menggunakan helper force_download()
         $this->load->helper('download');
         $this->load->model(['surat_keluar_model', 'klasifikasi_model', 'pamong_model', 'penomoran_surat_model']);
-        $this->list_session  = ['cari', 'filter'];
-        $this->modul_ini     = 'buku-administrasi-desa';
-        $this->sub_modul_ini = 'administrasi-umum';
+        $this->list_session = ['cari', 'filter'];
     }
 
-    public function clear($id = 0)
+    public function clear($id = 0): void
     {
         $this->session->per_page = 20;
         $this->session->surat    = $id;
@@ -58,22 +59,14 @@ class Surat_keluar extends Admin_Controller
         redirect('surat_keluar');
     }
 
-    public function index($p = 1, $o = 2)
+    public function index($p = 1, $o = 0): void
     {
-        $data['p'] = $p;
-        $data['o'] = $o;
+        $data['p'] = $p ?? 1;
+        $data['o'] = $o ?? 0;
 
-        if ($this->session->has_userdata('cari')) {
-            $data['cari'] = $this->session->cari;
-        } else {
-            $data['cari'] = '';
-        }
+        $data['cari'] = $this->session->has_userdata('cari') ? $this->session->cari : '';
 
-        if ($this->session->has_userdata('filter')) {
-            $data['filter'] = $this->session->filter;
-        } else {
-            $data['filter'] = '';
-        }
+        $data['filter'] = $this->session->has_userdata('filter') ? $this->session->filter : '';
 
         if ($this->session->has_userdata('per_page')) {
             $this->session->per_page = $this->input->post('per_page');
@@ -91,7 +84,7 @@ class Surat_keluar extends Admin_Controller
         $this->render('bumindes/umum/main', $data);
     }
 
-    public function form($p = 1, $o = 0, $id = '')
+    public function form($p = 1, $o = 0, $id = ''): void
     {
         $this->redirect_hak_akses('u');
         $data['tujuan']      = $this->surat_keluar_model->autocomplete();
@@ -100,7 +93,7 @@ class Surat_keluar extends Admin_Controller
         $data['o']           = $o;
 
         if ($id) {
-            $data['surat_keluar'] = $this->surat_keluar_model->get_surat_keluar($id);
+            $data['surat_keluar'] = $this->surat_keluar_model->get_surat_keluar($id) ?? show_404();
             $data['form_action']  = site_url("surat_keluar/update/{$p}/{$o}/{$id}");
         } else {
             $last_surat                         = $this->penomoran_surat_model->get_surat_terakhir('surat_keluar');
@@ -118,13 +111,13 @@ class Surat_keluar extends Admin_Controller
         $this->render('surat_keluar/form', $data);
     }
 
-    public function form_upload($p = 1, $o = 0, $url = '')
+    public function form_upload($p = 1, $o = 0, $url = ''): void
     {
         $data['form_action'] = site_url("surat_keluar/upload/{$p}/{$o}/{$url}");
         $this->load->view('surat_keluar/ajax-upload', $data);
     }
 
-    public function search()
+    public function search(): void
     {
         $cari = $this->input->post('cari');
         if ($cari != '') {
@@ -135,7 +128,7 @@ class Surat_keluar extends Admin_Controller
         redirect('surat_keluar');
     }
 
-    public function filter()
+    public function filter(): void
     {
         $filter = $this->input->post('filter');
         if ($filter != 0) {
@@ -146,42 +139,42 @@ class Surat_keluar extends Admin_Controller
         redirect('surat_keluar');
     }
 
-    public function insert()
+    public function insert(): void
     {
         $this->redirect_hak_akses('u');
         $this->surat_keluar_model->insert();
         redirect('surat_keluar');
     }
 
-    public function update($p = 1, $o = 0, $id = '')
+    public function update($p = 1, $o = 0, $id = ''): void
     {
         $this->redirect_hak_akses('u');
         $this->surat_keluar_model->update($id);
         redirect("surat_keluar/index/{$p}/{$o}");
     }
 
-    public function upload($p = 1, $o = 0, $url = '')
+    public function upload($p = 1, $o = 0, $url = ''): void
     {
         $this->redirect_hak_akses('u');
         $this->surat_keluar_model->upload($url);
         redirect("surat_keluar/index/{$p}/{$o}");
     }
 
-    public function delete($p = 1, $o = 0, $id = '')
+    public function delete($p = 1, $o = 0, $id = ''): void
     {
         $this->redirect_hak_akses('h');
         $this->surat_keluar_model->delete($id);
         redirect("surat_keluar/index/{$p}/{$o}");
     }
 
-    public function delete_all($p = 1, $o = 0)
+    public function delete_all($p = 1, $o = 0): void
     {
         $this->redirect_hak_akses('h');
         $this->surat_keluar_model->delete_all();
         redirect("surat_keluar/index/{$p}/{$o}");
     }
 
-    public function dialog_cetak($o = 0)
+    public function dialog_cetak($o = 0): void
     {
         $data['aksi']        = 'Cetak';
         $data['tahun_surat'] = $this->surat_keluar_model->list_tahun_surat();
@@ -190,7 +183,7 @@ class Surat_keluar extends Admin_Controller
         $this->load->view('surat_keluar/ajax_cetak', $data);
     }
 
-    public function dialog_unduh($o = 0)
+    public function dialog_unduh($o = 0): void
     {
         $data['aksi']        = 'Unduh';
         $data['tahun_surat'] = $this->surat_keluar_model->list_tahun_surat();
@@ -198,7 +191,7 @@ class Surat_keluar extends Admin_Controller
         $this->load->view('surat_keluar/ajax_cetak', $data);
     }
 
-    public function dialog($aksi = 'unduh', $o = 0)
+    public function dialog($aksi = 'unduh', $o = 0): void
     {
         // TODO :: gunakan view global penandatangan
         $ttd                    = $this->modal_penandatangan();
@@ -222,17 +215,15 @@ class Surat_keluar extends Admin_Controller
      *
      * @param int $idSuratKeluar Id berkas scan pada koloam surat_keluar.id
      * @param int $tipe
-     *
-     * @return void
      */
-    public function berkas($idSuratKeluar = 0, $tipe = 0)
+    public function berkas($idSuratKeluar = 0, $tipe = 0): void
     {
         // Ambil nama berkas dari database
         $berkas = $this->surat_keluar_model->getNamaBerkasScan($idSuratKeluar);
-        ambilBerkas($berkas, 'surat_keluar', '__sid__', LOKASI_ARSIP, ($tipe == 1) ? true : false);
+        ambilBerkas($berkas, 'surat_keluar', '__sid__', LOKASI_ARSIP, $tipe == 1);
     }
 
-    public function nomor_surat_duplikat()
+    public function nomor_surat_duplikat(): void
     {
         if ($this->input->post('nomor_urut') == $this->input->post('nomor_urut_lama')) {
             $hasil = false;
@@ -242,7 +233,7 @@ class Surat_keluar extends Admin_Controller
         echo $hasil ? 'false' : 'true';
     }
 
-    public function untuk_ekspedisi($p, $o, $id)
+    public function untuk_ekspedisi($p, $o, $id): void
     {
         $this->surat_keluar_model->untuk_ekspedisi($id, $masuk = 1);
         redirect("ekspedisi/index/{$p}/{$o}");

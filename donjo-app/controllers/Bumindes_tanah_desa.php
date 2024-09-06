@@ -11,7 +11,7 @@
  * Aplikasi dan source code ini dirilis berdasarkan lisensi GPL V3
  *
  * Hak Cipta 2009 - 2015 Combine Resource Institution (http://lumbungkomunitas.net/)
- * Hak Cipta 2016 - 2023 Perkumpulan Desa Digital Terbuka (https://opendesa.id)
+ * Hak Cipta 2016 - 2024 Perkumpulan Desa Digital Terbuka (https://opendesa.id)
  *
  * Dengan ini diberikan izin, secara gratis, kepada siapa pun yang mendapatkan salinan
  * dari perangkat lunak ini dan file dokumentasi terkait ("Aplikasi Ini"), untuk diperlakukan
@@ -29,7 +29,7 @@
  * @package   OpenSID
  * @author    Tim Pengembang OpenDesa
  * @copyright Hak Cipta 2009 - 2015 Combine Resource Institution (http://lumbungkomunitas.net/)
- * @copyright Hak Cipta 2016 - 2023 Perkumpulan Desa Digital Terbuka (https://opendesa.id)
+ * @copyright Hak Cipta 2016 - 2024 Perkumpulan Desa Digital Terbuka (https://opendesa.id)
  * @license   http://www.gnu.org/licenses/gpl.html GPL V3
  * @link      https://github.com/OpenSID/OpenSID
  *
@@ -39,12 +39,13 @@ defined('BASEPATH') || exit('No direct script access allowed');
 
 class Bumindes_tanah_desa extends Admin_Controller
 {
+    public $modul_ini     = 'buku-administrasi-desa';
+    public $sub_modul_ini = 'administrasi-umum';
+
     public function __construct()
     {
         parent::__construct();
         $this->load->model(['tanah_desa_model', 'pamong_model']);
-        $this->modul_ini     = 'buku-administrasi-desa';
-        $this->sub_modul_ini = 'administrasi-umum';
     }
 
     public function index()
@@ -63,17 +64,17 @@ class Bumindes_tanah_desa extends Admin_Controller
                     'recordsTotal'    => $this->tanah_desa_model->get_data()->count_all_results(),
                     'recordsFiltered' => $this->tanah_desa_model->get_data($search)->count_all_results(),
                     'data'            => $this->tanah_desa_model->get_data($search)->order_by($order, $dir)->limit($length, $start)->get()->result(),
-                ]));
+                ], JSON_THROW_ON_ERROR));
         }
 
         $this->render('bumindes/umum/main', [
-            'subtitle'     => 'Buku Tanah di Desa',
+            'subtitle'     => 'Buku Tanah di ' . ucwords($this->setting->sebutan_desa),
             'selected_nav' => 'tanah',
             'main_content' => 'bumindes/pembangunan/tanah_di_desa/content_tanah_di_desa',
         ]);
     }
 
-    public function clear()
+    public function clear(): void
     {
         $this->session->filter_tahun = date('Y');
         $this->session->filter_bulan = date('m');
@@ -81,10 +82,10 @@ class Bumindes_tanah_desa extends Admin_Controller
         redirect('bumindes_tanah_desa');
     }
 
-    public function view_tanah_desa($id)
+    public function view_tanah_desa($id): void
     {
         $data = [
-            'main'         => $this->tanah_desa_model->view_tanah_desa_by_id($id),
+            'main'         => $this->tanah_desa_model->view_tanah_desa_by_id($id) ?? show_404(),
             'main_content' => 'bumindes/pembangunan/tanah_di_desa/form_tanah_di_desa',
             'subtitle'     => 'Buku Tanah di Desa',
             'selected_nav' => 'tanah',
@@ -94,12 +95,12 @@ class Bumindes_tanah_desa extends Admin_Controller
         $this->render('bumindes/umum/main', $data);
     }
 
-    public function form($id = '')
+    public function form($id = ''): void
     {
         $this->redirect_hak_akses('u');
         if ($id) {
             $data = [
-                'main'        => $this->tanah_desa_model->view_tanah_desa_by_id($id),
+                'main'        => $this->tanah_desa_model->view_tanah_desa_by_id($id) ?? show_404(),
                 'form_action' => site_url("bumindes_tanah_desa/update_tanah_desa/{$id}"),
             ];
         } else {
@@ -118,7 +119,7 @@ class Bumindes_tanah_desa extends Admin_Controller
         $this->render('bumindes/umum/main', $data);
     }
 
-    public function add_tanah_desa()
+    public function add_tanah_desa(): void
     {
         $this->redirect_hak_akses('u');
         $this->tanah_desa_model->add_tanah_desa();
@@ -130,7 +131,7 @@ class Bumindes_tanah_desa extends Admin_Controller
         }
     }
 
-    public function update_tanah_desa($id)
+    public function update_tanah_desa($id): void
     {
         $this->redirect_hak_akses('u');
         $this->tanah_desa_model->update_tanah_desa();
@@ -142,7 +143,7 @@ class Bumindes_tanah_desa extends Admin_Controller
         }
     }
 
-    public function delete_tanah_desa($id)
+    public function delete_tanah_desa($id): void
     {
         $this->redirect_hak_akses('h');
         $this->tanah_desa_model->delete_tanah_desa($id);
@@ -150,7 +151,7 @@ class Bumindes_tanah_desa extends Admin_Controller
         redirect('bumindes_tanah_desa');
     }
 
-    public function cetak_tanah_desa($aksi = '')
+    public function cetak_tanah_desa($aksi = ''): void
     {
         $data              = $this->modal_penandatangan();
         $data['aksi']      = $aksi;
